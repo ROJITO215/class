@@ -25,3 +25,42 @@ def get_puerto_by_id():
     conn.close()  # Close the database connection
 
     return jsonify(users)
+
+@puerto.route('/puerto', methods=['POST'])
+def create_user():
+    data = request.get_json()  # Obtener los datos JSON del cuerpo de la solicitud
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Suponiendo que los datos incluyen 'nombre' y 'edad'
+        sql = "INSERT INTO puerto (altura, categoria, dorsal, netapa, nompuerto, pendiente) VALUES (%s, %s, %s, %s, %s, %s)"
+        cursor.execute(sql, (data['altura'], data['categoria'], data['dorsal'], data['netapa'], data['nompuerto'], data['pendiente']))
+        conn.commit()  # Confirmar la transacción
+        return jsonify({'message': 'puerto creado exitosamente'}), 201
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+        return jsonify('No se pudo crear el puerto'), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@puerto.route('/puerto/<string:categoria>', methods=['PUT'])
+def update_user(categoria):
+    data = request.get_json()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Suponiendo que los datos incluyen 'nombre' y 'edad'
+        sql = "UPDATE puerto SET altura = %s, dorsal = %s, netapa = %s, pendiente = %s WHERE categoria = %s"
+        cursor.execute(sql, (data['altura'], data['dorsal'], data['netapa'], data['pendiente'], categoria))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({'message': 'puerto no encontrado'}), 404
+        return jsonify({'message': 'puerto actualizado exitosamente'})
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+        return jsonify('No se pudo actualizar el puerto'), 500
+    finally:
+        if conn:
+            conn.close()
